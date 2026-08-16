@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BarkLog AI — Dog Vision & Dramatic Narrator</title>
+    <meta name="description" content="A funny, warm, and dramatic dog photo analyzer and narrator powered by Gemini AI vision." />
+    <script>
+      // Gracefully silence benign Vite HMR websocket disconnect notices in sandboxed container
+      (function() {
+        const isWsError = function(msg) {
+          const str = String(msg || '');
+          return str.includes('WebSocket') || str.includes('[vite]') || str.includes('ws://') || str.includes('wss://');
+        };
+
+        window.addEventListener('unhandledrejection', function(event) {
+          if (event.reason && (isWsError(event.reason) || isWsError(event.reason.message) || isWsError(event.reason.stack))) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+          }
+        }, true);
+
+        window.addEventListener('error', function(event) {
+          if (event.message && isWsError(event.message)) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+          }
+        }, true);
+
+        const origConsoleError = console.error;
+        console.error = function(...args) {
+          if (args.some(arg => isWsError(arg) || (arg && isWsError(arg.message)))) {
+            return;
+          }
+          origConsoleError.apply(console, args);
+        };
+
+        const origConsoleWarn = console.warn;
+        console.warn = function(...args) {
+          if (args.some(arg => isWsError(arg) || (arg && isWsError(arg.message)))) {
+            return;
+          }
+          origConsoleWarn.apply(console, args);
+        };
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..800;1,9..144,400..800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  </head>
+  <body class="bg-[#FAF7F2] text-[#2B1F17] antialiased selection:bg-[#F2A365] selection:text-white">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

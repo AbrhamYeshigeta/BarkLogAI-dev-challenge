@@ -1,0 +1,6 @@
+{
+  "name": "BarkLog AI",
+  "description": "A funny, warm, and dramatic dog photo analyzer and narrator powered by Gemini AI and dynamic voice narration.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
