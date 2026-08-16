@@ -61,6 +61,7 @@ export const AnalysisCard: React.FC<AnalysisCardProps> = ({
   const [imgSrc, setImgSrc] = useState<string>(imageUrl);
   const [imgLoaded, setImgLoaded] = useState<boolean>(false);
   const [hasImgError, setHasImgError] = useState<boolean>(false);
+  const voiceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Photo Frame Zoom, Fit & Pan States
   const [zoomLevel, setZoomLevel] = useState<number>(1);
@@ -216,13 +217,33 @@ export const AnalysisCard: React.FC<AnalysisCardProps> = ({
     return () => clearInterval(interval);
   }, [fullText]);
 
-  // Handle Play Voice
+  // Clean up any timeouts or speech on unmount
+  useEffect(() => {
+    return () => {
+      if (voiceTimeoutRef.current) {
+        clearTimeout(voiceTimeoutRef.current);
+      }
+      DogNarrator.stop();
+    };
+  }, []);
+
+  // Handle Play Voice: Plays canine bark sound effect conditioned on the dog's picture before the human monologue
   const handleToggleVoice = () => {
-    if (isSpeaking) {
+    if (isSpeaking || voiceTimeoutRef.current) {
+      if (voiceTimeoutRef.current) {
+        clearTimeout(voiceTimeoutRef.current);
+        voiceTimeoutRef.current = null;
+      }
       DogNarrator.stop();
       setIsSpeaking(false);
+      setIsBarking(false);
     } else {
-      // Trigger mini confetti burst for dramatic voice
+      // 1. Play the dog's acoustic/synthesized bark sound effect matched to its breed, size, mood, and photo!
+      playBarkSound(analysis);
+      setIsBarking(true);
+      setTimeout(() => setIsBarking(false), (acoustics.pulses * acoustics.pulseGap) + 300);
+
+      // Trigger mini celebratory confetti burst
       try {
         confetti({
           particleCount: 35,
@@ -231,11 +252,25 @@ export const AnalysisCard: React.FC<AnalysisCardProps> = ({
         });
       } catch {}
 
-      DogNarrator.speak(analysis.innerThought || fullText, selectedPersona, {
-        onStart: () => setIsSpeaking(true),
-        onEnd: () => setIsSpeaking(false),
-        onError: () => setIsSpeaking(false),
-      });
+      setIsSpeaking(true);
+
+      // 2. Begin human voice inner monologue right after the canine bark introduction
+      const barkDelay = Math.max(380, (acoustics.pulses * acoustics.pulseGap) + 120);
+
+      voiceTimeoutRef.current = setTimeout(() => {
+        voiceTimeoutRef.current = null;
+        DogNarrator.speak(analysis.innerThought || fullText, selectedPersona, {
+          onStart: () => setIsSpeaking(true),
+          onEnd: () => {
+            setIsSpeaking(false);
+            setIsBarking(false);
+          },
+          onError: () => {
+            setIsSpeaking(false);
+            setIsBarking(false);
+          },
+        });
+      }, barkDelay);
     }
   };
 
